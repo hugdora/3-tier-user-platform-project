@@ -17,7 +17,7 @@ spec:
       - name: regcred
       containers:
       - name: nodejs-app
-        image: devopsshack/nodejs-app:prod-41bd8a4de4d68bfdc54725eb7849f1914f8c1317
+        image: hugdora/3-tier-user-platform-project:f0665b96427a3012f5106a8d593c361eea57536c
         ports:
         - containerPort: 5000
         env:
