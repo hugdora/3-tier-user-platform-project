@@ -17,7 +17,7 @@ spec:
       - name: regcred
       containers:
       - name: nodejs-app
-          image: hugdora/3-tier-user-platform-project:63522bef75f84f562b59cdfa4749eb22de044501
+          image: hugdora/3-tier-user-platform-project:8cf14c34292cb73e4e12140bd891c761a033cd8f
         ports:
         - containerPort: 5000
         env:
