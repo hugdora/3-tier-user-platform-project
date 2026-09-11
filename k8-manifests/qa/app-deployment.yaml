@@ -1,37 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
-
 metadata:
   name: nodejs-app
   namespace: qa
-
 spec:
   replicas: 1
-
   selector:
     matchLabels:
       app: nodejs-app
-
   template:
     metadata:
       labels:
         app: nodejs-app
-
     spec:
       serviceAccountName: application
-
       imagePullSecrets:
         - name: regcred
-
       containers:
         - name: nodejs-app
-          image: hugdora/3-tier-user-platform-project:devsecops-secrets-v3 
+          image: hugdora/3-tier-user-platform-project:5a1b2f39edfa58474bad3d078fa578623dcee28b
           ports:
             - containerPort: 5000
           env:
             - name: DB_HOST
               value: mysql
-
           readinessProbe:
             httpGet:
               path: /health
@@ -40,7 +32,6 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
-
           livenessProbe:
             httpGet:
               path: /health
@@ -49,12 +40,10 @@ spec:
             periodSeconds: 20
             timeoutSeconds: 5
             failureThreshold: 3
-
           volumeMounts:
             - name: secrets-store
               mountPath: /mnt/secrets
               readOnly: true
-
       volumes:
         - name: secrets-store
           csi:
