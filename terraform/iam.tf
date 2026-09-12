@@ -101,3 +101,10 @@ resource "aws_eks_pod_identity_association" "application" {
   service_account = "application"
   role_arn        = aws_iam_role.application.arn
 }
+# Add Production Pod Identity
+resource "aws_eks_pod_identity_association" "application_prod" {
+  cluster_name    = module.eks.cluster_name
+  namespace       = "prod"
+  service_account = "application"
+  role_arn        = aws_iam_role.application.arn
+}
