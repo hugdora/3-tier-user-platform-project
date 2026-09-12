@@ -8,6 +8,9 @@ on:
       - client/**
       - server/**
       - .github/workflows/qa-cicd.yml
+  pull_request:
+    branches:
+      - qa
 permissions:
   contents: write
   id-token: write
@@ -29,7 +32,7 @@ jobs:
             --report-format=json \
             --report-path=/repo/gitleaks-report.json \
             --redact \
-            --exit-code 0
+            --exit-code 1
             
       - name: Upload Gitleaks report
         uses: actions/upload-artifact@v4
@@ -336,7 +339,7 @@ jobs:
 
   sonarqube:
     name: SonarQube Analysis & Quality Gate Check
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs:
       - server-test
       - client-test
@@ -418,8 +421,8 @@ jobs:
           load: true
           push: false
           tags: |
-            devopsshack/nodejs-app:${{ github.sha }}
-            devopsshack/nodejs-app:latest
+            hugdora/3-tier-user-platform-project:${{ github.sha }}
+            hugdora/3-tier-user-platform-project:latest
 
       - name: Install Trivy
         uses: aquasecurity/setup-trivy@v0.2.6
@@ -434,7 +437,7 @@ jobs:
 
       - name: Run Trivy image scan (JSON)
         run: |
-          trivy image devopsshack/nodejs-app:${{ github.sha }} \
+          trivy image hugdora/3-tier-user-platform-project:${{ github.sha }} \
             --format json \
             --output image-trivy-report.json \
             --severity HIGH,CRITICAL \
@@ -443,7 +446,7 @@ jobs:
 
       - name: Run Trivy image scan (TABLE)
         run: |
-          trivy image devopsshack/nodejs-app:${{ github.sha }} \
+          trivy image hugdora/3-tier-user-platform-project:${{ github.sha }} \
             --format table \
             --severity HIGH,CRITICAL \
             --ignore-unfixed \
@@ -474,18 +477,15 @@ jobs:
       - name: Generate image SBOM
         uses: anchore/sbom-action@v0
         with:
-          image: devopsshack/nodejs-app:${{ github.sha }}
+          image: hugdora/3-tier-user-platform-project:${{ github.sha }}
           format: spdx-json
           output-file: image-sbom.spdx.json
           upload-artifact: true  
           
-      - name: Push
-        uses: docker/build-push-action@v7
-        with:
-          push: true
-          tags: |
-            devopsshack/nodejs-app:${{ github.sha }}
-            devopsshack/nodejs-app:latest
+      - name: Push image
+        run: |
+          docker push hugdora/3-tier-user-platform-project:${{ github.sha }}
+          docker push hugdora/3-tier-user-platform-project:latest
 
 
   update-qa-manifest:
@@ -501,7 +501,7 @@ jobs:
           ref: qa
       - name: Update image tag in manifest
         run: |
-          sed -i "s|image: devopsshack/nodejs-app:.*|image: devopsshack/nodejs-app:${GITHUB_SHA}|g" k8-manifests/qa/app-deployment.yaml
+          yq -i '.spec.template.spec.containers[0].image = "hugdora/3-tier-user-platform-project:'"${GITHUB_SHA}"'"' k8-manifests/qa/app-deployment.yaml
       - name: Show updated manifest (debug)
         run: |
           cat k8-manifests/qa/app-deployment.yaml
@@ -518,8 +518,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: update-qa-manifest
     env:
-      AWS_REGION: ap-south-1
-      EKS_CLUSTER_NAME: my-cluster
+      AWS_REGION: eu-west-2
+      EKS_CLUSTER_NAME: 3-tier-user-platform-eks
       K8S_NAMESPACE: qa
 
     steps:

@@ -2,13 +2,13 @@ FROM node:20-alpine
 
 WORKDIR /usr/src/app/client
 COPY client/package*.json ./
-RUN npm install
+RUN npm ci
 COPY client/ ./
 RUN npm run build
 
 WORKDIR /usr/src/app/server
 COPY server/package*.json ./
-RUN npm install --omit=dev
+RUN npm ci --omit=dev
 COPY server/ ./
 
 RUN mkdir -p ./public && cp -R /usr/src/app/client/public/* ./public/
